@@ -37,3 +37,26 @@ Uploading (took <5min from University cluster)
 ```
 for x in cookbook homepage pdt src tarballs toolboxes; do ( cd peano-$x; git remote add origin git@github.com:peano-framework/peano-${x}.git && git push -u origin master ) & done
 ```
+
+## Minor details
+
+For the `peano-homepage` repository, git refuses to accept the repo due to huge files (>100MB) in the history.
+
+Find them with ([source](https://stackoverflow.com/a/46615578))
+
+```
+git rev-list --objects --all \
+| git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' \
+| awk '/^blob/ {print substr($0,6)}' \
+| sort --numeric-sort --key=2 \
+| cut --complement --characters=13-40 \
+| numfmt --field=2 --to=iec-i --suffix=B --padding=7 --round=nearest
+```
+
+and delete them from history with
+
+```
+git filter-branch --index-filter 'git rm --cached --ignore-unmatch gallery/pit_2d.avi gallery/pit_3d.avi' HEAD
+```
+
+then pushing is fine.
